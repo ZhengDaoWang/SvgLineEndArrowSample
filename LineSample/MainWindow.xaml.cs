@@ -78,20 +78,19 @@ namespace LineSample
                 Pen = new Pen();
                 RefreshPen(Pen);
                 drawingContext.DrawGeometry(Fill, Pen, geometry);
-                _arrowPointsDictionary.Clear();
                 var headEndType = HeadEndCombox.SelectedValue?.ToString();
                 if (headEndType != null)
                 {
                     ArrowWidth = GetArrowWidth(HeadEndWidth.SelectedValue.ToString());
                     ArrowHeight = GetArrowLength(HeadEndLength.SelectedValue.ToString());
-                    DrawGeometry(headEndType, first, last, drawingContext);
+                    DrawGeometry(headEndType, last, first, drawingContext);
                 }
                 var tailEndType = TailEndCombox.SelectedValue?.ToString();
                 if (tailEndType != null)
                 {
-                    ArrowWidth = GetArrowWidth(HeadEndWidth.SelectedValue.ToString());
-                    ArrowHeight = GetArrowLength(HeadEndLength.SelectedValue.ToString());
-                    DrawGeometry(tailEndType, last, first, drawingContext);
+                    ArrowWidth = GetArrowWidth(TailEndWidth.SelectedValue.ToString());
+                    ArrowHeight = GetArrowLength(TailEndLength.SelectedValue.ToString());
+                    DrawGeometry(tailEndType, first, last, drawingContext);
                 }
             }
             this.PathGrid.Background = new VisualBrush(drawingVisual) { Stretch = Stretch.None };
@@ -99,6 +98,7 @@ namespace LineSample
 
         private void DrawGeometry(string arrowType, Point firstPoint, Point lastPoint, DrawingContext drawingContext)
         {
+            _arrowPointsDictionary.Clear();
             var arrowGeometry = GetGeometryByArrowType(arrowType, firstPoint, lastPoint);
             drawingContext.DrawGeometry(Stroke, Pen, arrowGeometry);
         }
@@ -119,7 +119,7 @@ namespace LineSample
             var arrowGeometry = new StreamGeometry();
             Point beginFirst = new Point(), beginSecond = new Point();
             GetTrianglePoints(firstPoint, lastPoint, ref beginFirst, ref beginSecond);
-            _arrowPointsDictionary.Add(firstPoint, new List<Point> { beginFirst, beginSecond }); //前端的箭头
+            _arrowPointsDictionary.Add(lastPoint, new List<Point> { beginFirst, beginSecond }); //前端的箭头
             using var arrowContext = arrowGeometry.Open();
             foreach (KeyValuePair<Point, List<Point>> keyValuePair in _arrowPointsDictionary)
             {
