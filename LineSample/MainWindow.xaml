@@ -1,0 +1,36 @@
+﻿<Window x:Class="LineSample.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:LineSample"
+        mc:Ignorable="d"
+        Title="MainWindow" Height="650" Width="1000">
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition/>
+            <RowDefinition Height="3*"/>
+        </Grid.RowDefinitions>
+        <Grid>
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition/>
+                <ColumnDefinition/>
+                <ColumnDefinition/>
+            </Grid.ColumnDefinitions>
+            <StackPanel>
+                <ComboBox x:Name="HeadEndCombox" Margin="10"/>
+                <ComboBox x:Name="HeadEndWidth" Margin="10"/>
+                <ComboBox x:Name="HeadEndLength" Margin="10"/>
+            </StackPanel>
+            <StackPanel Grid.Column="1">
+                <ComboBox x:Name="TailEndCombox" Margin="10"/>
+                <ComboBox x:Name="TailEndWidth" Margin="10"/>
+                <ComboBox x:Name="TailEndLength" Margin="10"/>
+            </StackPanel>
+            <Button Grid.Column="2" Height="50" Width="200" Content="解析" FontSize="25" Click="Button_Click"/>
+        </Grid>
+        <Grid Grid.Row="1" x:Name="PathGrid" >
+
+        </Grid>
+    </Grid>
+</Window>
