@@ -10,7 +10,7 @@ namespace LineSample
     /// </summary>
     public partial class MainWindow : Window
     {
-        string Path = "M 0.000,0.000 L 311.331,106.647";
+        string Path = "M 0.000,0.000 L 311.331,0";
 
         private readonly Dictionary<Point, List<Point>> _arrowPointsDictionary = new Dictionary<Point, List<Point>>();
 
@@ -63,7 +63,7 @@ namespace LineSample
             TailEndCombox.ItemsSource = LineEndType;
             TailEndWidth.ItemsSource = LineEndWidth;
             TailEndLength.ItemsSource = LineEndLength;
-            TailEndCombox.SelectedIndex = 1;
+            TailEndCombox.SelectedIndex = 2;
             TailEndWidth.SelectedIndex = 1;
             TailEndLength.SelectedIndex = 1;
         }
@@ -118,6 +118,7 @@ namespace LineSample
             {
                 "Triangle" => GetTriangleGeometry(firstPoint, lastPoint),
                 "Arrow" => GetArrowGeometry(firstPoint, lastPoint),
+                "Stealth" => GetStealthGeometry(firstPoint, lastPoint),
                 "Oval" => GetEllipseGeometry(firstPoint, lastPoint),
                 _ => GetTriangleGeometry(firstPoint, lastPoint),
             };
@@ -137,6 +138,23 @@ namespace LineSample
                 arrowContext.BeginFigure(keyValuePair.Value[0], true, true);
                 arrowContext.LineTo(keyValuePair.Key, true, false);
                 arrowContext.LineTo(keyValuePair.Value[1], true, false);
+            }
+            return arrowGeometry;
+        }
+
+        private Geometry GetStealthGeometry(Point firstPoint, Point lastPoint)
+        {
+            var arrowGeometry = new StreamGeometry();
+            var (beginFirst, beginSecond, beginThrid) = GetStealthPoints(firstPoint, lastPoint);
+            _arrowPointsDictionary.Add(lastPoint, new List<Point> { beginFirst, beginSecond, beginThrid }); //前端的箭头
+            using var arrowContext = arrowGeometry.Open();
+            foreach (KeyValuePair<Point, List<Point>> keyValuePair in _arrowPointsDictionary)
+            {
+                if (keyValuePair.Value == null) continue;
+                arrowContext.BeginFigure(keyValuePair.Value[0], true, true);
+                arrowContext.LineTo(keyValuePair.Key, true, false);
+                arrowContext.LineTo(keyValuePair.Value[1], true, false);
+                arrowContext.LineTo(keyValuePair.Value[2], true, false);
             }
             return arrowGeometry;
         }
@@ -190,7 +208,7 @@ namespace LineSample
                         "Small" => 0.6 * (StrokeThickness > 2 ? StrokeThickness : 2),
                         "Medium" => 1.5 * (StrokeThickness > 2 ? StrokeThickness : 2),
                         "Large" => 3 * (StrokeThickness > 2 ? StrokeThickness : 2),
-                        _ => 5 * (StrokeThickness > 2 ? StrokeThickness : 2)
+                        _ => 1.5 * (StrokeThickness > 2 ? StrokeThickness : 2)
                     };
                     break;
                 case "Oval":
@@ -211,6 +229,15 @@ namespace LineSample
                         _ => 6 * (StrokeThickness > 2 ? StrokeThickness : 2)
                     };
                     break;
+                case "Stealth":
+                    arrowWidth = lineEndWidth switch
+                    {
+                        "Small" => 0.4 * (StrokeThickness > 2 ? StrokeThickness : 2),
+                        "Medium" => 0.5 * (StrokeThickness > 2 ? StrokeThickness : 2),
+                        "Large" => 1.5 * (StrokeThickness > 2 ? StrokeThickness : 2),
+                        _ => 1.5 * (StrokeThickness > 2 ? StrokeThickness : 2)
+                    };
+                    break;
             }
 
             return arrowWidth;
@@ -224,7 +251,7 @@ namespace LineSample
                 case "Triangle":
                     arrowLength = lineEndLength switch
                     {
-                        "Small" => 0.3 * (StrokeThickness > 2 ? StrokeThickness : 2),
+                        "Small" => 0.2 * (StrokeThickness > 2 ? StrokeThickness : 2),
                         "Medium" => 0.75 * (StrokeThickness > 2 ? StrokeThickness : 2),
                         "Large" => 1.5 * (StrokeThickness > 2 ? StrokeThickness : 2),
                         _ => 5 * (StrokeThickness > 2 ? StrokeThickness : 2)
@@ -246,6 +273,15 @@ namespace LineSample
                         "Medium" => 2 * (StrokeThickness > 2 ? StrokeThickness : 2),
                         "Large" => 3 * (StrokeThickness > 2 ? StrokeThickness : 2),
                         _ => 6 * (StrokeThickness > 2 ? StrokeThickness : 2)
+                    };
+                    break;
+                case "Stealth":
+                    arrowLength = lineEndLength switch
+                    {
+                        "Small" => 0.17 * (StrokeThickness > 2 ? StrokeThickness : 2),
+                        "Medium" => 0.3 * (StrokeThickness > 2 ? StrokeThickness : 2),
+                        "Large" => 0.75 * (StrokeThickness > 2 ? StrokeThickness : 2),
+                        _ => 0.75 * (StrokeThickness > 2 ? StrokeThickness : 2)
                     };
                     break;
             }
@@ -270,6 +306,21 @@ namespace LineSample
             OnRender(Path);
         }
 
+        private (Point pt1, Point pt2, Point pt3) GetStealthPoints(Point first, Point last)
+        {
+            var theta = Math.Atan2(first.Y - last.Y, first.X - last.X);
+            var sin = Math.Sin(theta);
+            var cos = Math.Cos(theta);
+            var pt1 = new Point(last.X + (ArrowWidth * cos - ArrowHeight * sin),
+                 last.Y + (ArrowWidth * sin + ArrowHeight * cos));
+            var pt2 = new Point(last.X + (ArrowWidth * cos + ArrowHeight * sin),
+                 last.Y - (ArrowHeight * cos - ArrowWidth * sin));
+
+
+            var pt3 = new Point(last.X + (ArrowWidth / 1.4 * cos), last.Y + (ArrowWidth / 1.4 * sin));
+            return (pt1, pt2, pt3);
+        }
+
         private void GetArrowPoints(Point first, Point last, ref Point pt1, ref Point pt2)
         {
             var theta = Math.Atan2(first.Y - last.Y, first.X - last.X);
@@ -291,17 +342,6 @@ namespace LineSample
         }
 
         private void GetTrianglePoints(Point first, Point last, ref Point pt1, ref Point pt2)
-        {
-            var theta = Math.Atan2(first.Y - last.Y, first.X - last.X);
-            var sin = Math.Sin(theta);
-            var cos = Math.Cos(theta);
-            pt1 = new Point(last.X + (ArrowWidth * cos - ArrowHeight * sin),
-                last.Y + (ArrowWidth * sin + ArrowHeight * cos));
-            pt2 = new Point(last.X + (ArrowWidth * cos + ArrowHeight * sin),
-                last.Y - (ArrowHeight * cos - ArrowWidth * sin));
-        }
-
-        private void GetCiclePoints(Point first, Point last, ref Point pt1, ref Point pt2)
         {
             var theta = Math.Atan2(first.Y - last.Y, first.X - last.X);
             var sin = Math.Sin(theta);
