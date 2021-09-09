@@ -10,7 +10,7 @@ namespace LineSample
     /// </summary>
     public partial class MainWindow : Window
     {
-        string Path = "M 0.000,0.000 L 311.331,106.647 ";
+        string Path = "M 0.000,0.000 L 311.331,106.647";
 
         private readonly Dictionary<Point, List<Point>> _arrowPointsDictionary = new Dictionary<Point, List<Point>>();
 
@@ -19,7 +19,7 @@ namespace LineSample
 
         private Pen Pen { get; set; }
 
-        private Brush Stroke { get; } = new SolidColorBrush(Color.FromRgb(47, 82, 143));
+        private Brush Stroke { get; set; } = new SolidColorBrush(Color.FromRgb(47, 82, 143));
 
         private Brush Fill { get; } = new SolidColorBrush(Color.FromRgb(68, 114, 196));
 
@@ -63,6 +63,9 @@ namespace LineSample
             TailEndCombox.ItemsSource = LineEndType;
             TailEndWidth.ItemsSource = LineEndWidth;
             TailEndLength.ItemsSource = LineEndLength;
+            TailEndCombox.SelectedIndex = 1;
+            TailEndWidth.SelectedIndex = 1;
+            TailEndLength.SelectedIndex = 1;
         }
 
         private void OnRender(string path)
@@ -81,15 +84,15 @@ namespace LineSample
                 var headEndType = HeadEndCombox.SelectedValue?.ToString();
                 if (headEndType != null)
                 {
-                    ArrowWidth = GetArrowWidth(HeadEndWidth.SelectedValue.ToString());
-                    ArrowHeight = GetArrowLength(HeadEndLength.SelectedValue.ToString());
+                    ArrowWidth = GetArrowWidth(HeadEndWidth.SelectedValue.ToString(), headEndType);
+                    ArrowHeight = GetArrowLength(HeadEndLength.SelectedValue.ToString(), headEndType);
                     DrawGeometry(headEndType, last, first, drawingContext);
                 }
                 var tailEndType = TailEndCombox.SelectedValue?.ToString();
                 if (tailEndType != null)
                 {
-                    ArrowWidth = GetArrowWidth(TailEndWidth.SelectedValue.ToString());
-                    ArrowHeight = GetArrowLength(TailEndLength.SelectedValue.ToString());
+                    ArrowWidth = GetArrowWidth(TailEndWidth.SelectedValue.ToString(), tailEndType);
+                    ArrowHeight = GetArrowLength(TailEndLength.SelectedValue.ToString(), tailEndType);
                     DrawGeometry(tailEndType, first, last, drawingContext);
                 }
             }
@@ -98,9 +101,15 @@ namespace LineSample
 
         private void DrawGeometry(string arrowType, Point firstPoint, Point lastPoint, DrawingContext drawingContext)
         {
+            var isFill = arrowType != "Arrow";
             _arrowPointsDictionary.Clear();
             var arrowGeometry = GetGeometryByArrowType(arrowType, firstPoint, lastPoint);
+            if (arrowType == "Oval")
+            {
+                Pen.Brush = new SolidColorBrush(Colors.Red);
+            }
             drawingContext.DrawGeometry(Stroke, Pen, arrowGeometry);
+            Pen.Brush = Stroke;
         }
 
         private Geometry GetGeometryByArrowType(string arrowType, Point firstPoint, Point lastPoint)
@@ -108,6 +117,7 @@ namespace LineSample
             Geometry geometry = arrowType switch
             {
                 "Triangle" => GetTriangleGeometry(firstPoint, lastPoint),
+                "Arrow" => GetArrowGeometry(firstPoint, lastPoint),
                 "Oval" => GetEllipseGeometry(firstPoint, lastPoint),
                 _ => GetTriangleGeometry(firstPoint, lastPoint),
             };
@@ -131,45 +141,114 @@ namespace LineSample
             return arrowGeometry;
         }
 
-        private Geometry GetEllipseGeometry(Point firstPoint, Point lastPoint)
+        private Geometry GetArrowGeometry(Point firstPoint, Point lastPoint)
         {
             var arrowGeometry = new StreamGeometry();
             Point beginFirst = new Point(), beginSecond = new Point();
-            GetCiclePoints(firstPoint, lastPoint, ref beginFirst, ref beginSecond);
-            _arrowPointsDictionary.Add(firstPoint, new List<Point> { beginFirst, beginSecond }); //前端的箭头
+            GetArrowPoints(firstPoint, lastPoint, ref beginFirst, ref beginSecond);
+            _arrowPointsDictionary.Add(lastPoint, new List<Point> { beginFirst, beginSecond }); //前端的箭头
             using var arrowContext = arrowGeometry.Open();
             foreach (KeyValuePair<Point, List<Point>> keyValuePair in _arrowPointsDictionary)
             {
                 if (keyValuePair.Value == null) continue;
-                arrowContext.BeginFigure(keyValuePair.Value[0], true, true);
-                arrowContext.ArcTo(keyValuePair.Key, new Size(ArrowWidth, ArrowHeight), 0, true, SweepDirection.Clockwise, true, false);
-                arrowContext.ArcTo(keyValuePair.Value[1], new Size(ArrowWidth, ArrowHeight), 0, true, SweepDirection.Counterclockwise, true, false);
+                arrowContext.BeginFigure(keyValuePair.Value[0], false, false);
+                arrowContext.LineTo(keyValuePair.Key, true, false);
+                arrowContext.LineTo(keyValuePair.Value[1], true, true);
             }
             return arrowGeometry;
         }
 
-        private double GetArrowWidth(string? lineEndWidth)
+        private Geometry GetEllipseGeometry(Point firstPoint, Point lastPoint)
         {
-            double arrowWidth = lineEndWidth switch
+            var arrowGeometry = new StreamGeometry();
+            Point beginFirst = new Point(), beginSecond = new Point();
+            GetEllipsePoints(firstPoint, lastPoint, ref beginFirst, ref beginSecond);
+            _arrowPointsDictionary.Add(lastPoint, new List<Point> { beginFirst, beginSecond }); //前端的箭头
+            using var arrowContext = arrowGeometry.Open();
+            var size = new Size(ArrowWidth / Math.PI / 4, ArrowHeight / Math.PI / 4);
+            var theta = Math.Atan2(lastPoint.Y - firstPoint.Y, lastPoint.X - firstPoint.X);
+            foreach (KeyValuePair<Point, List<Point>> keyValuePair in _arrowPointsDictionary)
             {
-                "Small" => 0.6 * (StrokeThickness > 2 ? StrokeThickness : 2),
-                "Medium" => 1.5 * (StrokeThickness > 2 ? StrokeThickness : 2),
-                "Large" => 3 * (StrokeThickness > 2 ? StrokeThickness : 2),
-                _ => 5 * (StrokeThickness > 2 ? StrokeThickness : 2)
-            };
+                if (keyValuePair.Value == null) continue;
+                arrowContext.BeginFigure(keyValuePair.Key, true, false);
+                //arrowContext.LineTo(keyValuePair.Key, true, false);
+                //arrowContext.LineTo(keyValuePair.Value[1], true, false);
+                arrowContext.ArcTo(keyValuePair.Value[0], size, 0, true, SweepDirection.Clockwise, true, false);
+                arrowContext.ArcTo(keyValuePair.Key, size, 0, true, SweepDirection.Clockwise, true, false);
+            }
+            return arrowGeometry;
+        }
+
+        private double GetArrowWidth(string? lineEndWidth, string arrowType)
+        {
+            double arrowWidth = 0;
+            switch (arrowType)
+            {
+                case "Triangle":
+                    arrowWidth = lineEndWidth switch
+                    {
+                        "Small" => 0.6 * (StrokeThickness > 2 ? StrokeThickness : 2),
+                        "Medium" => 1.5 * (StrokeThickness > 2 ? StrokeThickness : 2),
+                        "Large" => 3 * (StrokeThickness > 2 ? StrokeThickness : 2),
+                        _ => 5 * (StrokeThickness > 2 ? StrokeThickness : 2)
+                    };
+                    break;
+                case "Oval":
+                    arrowWidth = lineEndWidth switch
+                    {
+                        "Small" => 0.6 * (StrokeThickness > 2 ? StrokeThickness : 2),
+                        "Medium" => 1.5 * (StrokeThickness > 2 ? StrokeThickness : 2),
+                        "Large" => 3 * (StrokeThickness > 2 ? StrokeThickness : 2),
+                        _ => 5 * (StrokeThickness > 2 ? StrokeThickness : 2)
+                    };
+                    break;
+                case "Arrow":
+                    arrowWidth = lineEndWidth switch
+                    {
+                        "Small" => 3 * (StrokeThickness > 2 ? StrokeThickness : 2),
+                        "Medium" => 4 * (StrokeThickness > 2 ? StrokeThickness : 2),
+                        "Large" => 6 * (StrokeThickness > 2 ? StrokeThickness : 2),
+                        _ => 6 * (StrokeThickness > 2 ? StrokeThickness : 2)
+                    };
+                    break;
+            }
+
             return arrowWidth;
         }
 
-        private double GetArrowLength(string? lineEndLength)
+        private double GetArrowLength(string? lineEndLength, string arrowType)
         {
-            double arrowLength = lineEndLength switch
+            double arrowLength = 0;
+            switch (arrowType)
             {
-                "Small" => 0.3 * (StrokeThickness > 2 ? StrokeThickness : 2),
-                "Medium" => 0.75 * (StrokeThickness > 2 ? StrokeThickness : 2),
-                "Large" => 1.5 * (StrokeThickness > 2 ? StrokeThickness : 2),
-                _ => 5 * (StrokeThickness > 2 ? StrokeThickness : 2)
-            };
-
+                case "Triangle":
+                    arrowLength = lineEndLength switch
+                    {
+                        "Small" => 0.3 * (StrokeThickness > 2 ? StrokeThickness : 2),
+                        "Medium" => 0.75 * (StrokeThickness > 2 ? StrokeThickness : 2),
+                        "Large" => 1.5 * (StrokeThickness > 2 ? StrokeThickness : 2),
+                        _ => 5 * (StrokeThickness > 2 ? StrokeThickness : 2)
+                    };
+                    break;
+                case "Oval":
+                    arrowLength = lineEndLength switch
+                    {
+                        "Small" => 0.6 * (StrokeThickness > 2 ? StrokeThickness : 2),
+                        "Medium" => 1.5 * (StrokeThickness > 2 ? StrokeThickness : 2),
+                        "Large" => 3 * (StrokeThickness > 2 ? StrokeThickness : 2),
+                        _ => 5 * (StrokeThickness > 2 ? StrokeThickness : 2)
+                    };
+                    break;
+                case "Arrow":
+                    arrowLength = lineEndLength switch
+                    {
+                        "Small" => 1.5 * (StrokeThickness > 2 ? StrokeThickness : 2),
+                        "Medium" => 2 * (StrokeThickness > 2 ? StrokeThickness : 2),
+                        "Large" => 3 * (StrokeThickness > 2 ? StrokeThickness : 2),
+                        _ => 6 * (StrokeThickness > 2 ? StrokeThickness : 2)
+                    };
+                    break;
+            }
             return arrowLength;
         }
 
@@ -179,7 +258,7 @@ namespace LineSample
         private void RefreshPen(Pen pen, bool isStroke = true)
         {
             pen.Brush = isStroke ? Stroke : null;
-            pen.Thickness = isStroke ? StrokeThickness : 0;
+            pen.Thickness = StrokeThickness;
             //pen.DashStyle = new System.Windows.Media.DashStyle(0, 1);
             pen.StartLineCap = PenLineCap.Flat;
             pen.EndLineCap = pen.StartLineCap;
@@ -189,6 +268,26 @@ namespace LineSample
         private void Button_Click(object sender, RoutedEventArgs e)
         {
             OnRender(Path);
+        }
+
+        private void GetArrowPoints(Point first, Point last, ref Point pt1, ref Point pt2)
+        {
+            var theta = Math.Atan2(first.Y - last.Y, first.X - last.X);
+            var sin = Math.Sin(theta);
+            var cos = Math.Cos(theta);
+            pt1 = new Point(last.X + (ArrowWidth * cos - ArrowHeight * sin),
+                last.Y + (ArrowWidth * sin + ArrowHeight * cos));
+            pt2 = new Point(last.X + (ArrowWidth * cos + ArrowHeight * sin),
+                last.Y - (ArrowHeight * cos - ArrowWidth * sin));
+        }
+
+        private void GetEllipsePoints(Point first, Point last, ref Point pt1, ref Point pt2)
+        {
+            var theta = Math.Atan2(last.Y - first.Y, last.X - first.X);
+            var sin = Math.Sin(theta);
+            var cos = Math.Cos(theta);
+            pt1 = new Point(last.X - ArrowWidth * sin, last.Y - ArrowHeight * cos);
+            pt2 = new Point(last.X - ArrowWidth * sin, last.Y - ArrowHeight * cos);
         }
 
         private void GetTrianglePoints(Point first, Point last, ref Point pt1, ref Point pt2)
