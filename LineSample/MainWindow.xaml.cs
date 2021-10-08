@@ -62,7 +62,7 @@ namespace LineSample
             TailEndCombox.ItemsSource = LineEndType;
             TailEndWidth.ItemsSource = LineEndWidths;
             TailEndLength.ItemsSource = LineEndLengths;
-            TailEndCombox.SelectedIndex = 4;
+            TailEndCombox.SelectedIndex = 0;
             TailEndWidth.SelectedIndex = 1;
             TailEndLength.SelectedIndex = 1;
         }

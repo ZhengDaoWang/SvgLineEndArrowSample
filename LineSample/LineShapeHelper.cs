@@ -98,7 +98,7 @@ namespace LineSample
                 case "Triangle":
                     arrowLength = lineEndLength switch
                     {
-                        LineEndLength.Small => 0.2 * (strokeThickness > 2 ? strokeThickness : 2),
+                        LineEndLength.Small => 0.35* (strokeThickness > 2 ? strokeThickness : 2),
                         LineEndLength.Medium => 0.75 * (strokeThickness > 2 ? strokeThickness : 2),
                         LineEndLength.Large => 1.5 * (strokeThickness > 2 ? strokeThickness : 2),
                         _ => 0.75 * (strokeThickness > 2 ? strokeThickness : 2)

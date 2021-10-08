@@ -13,21 +13,27 @@
         </Grid.RowDefinitions>
         <Grid>
             <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="80"/>
                 <ColumnDefinition/>
                 <ColumnDefinition/>
                 <ColumnDefinition/>
             </Grid.ColumnDefinitions>
-            <StackPanel>
+            <StackPanel HorizontalAlignment="Right">
+                <TextBlock x:Name="HeadEndTextBlock" Margin="10,10,0,17" Text="箭头类型:"/>
+                <TextBlock x:Name="HeadEndWidthTextBlock" Margin="10,10,0,17" Text="箭头宽:"/>
+                <TextBlock x:Name="HeadEndLengthTextBlock" Margin="10,10,0,15" Text="箭头长:"/>
+            </StackPanel>
+            <StackPanel Grid.Column="1">
                 <ComboBox x:Name="HeadEndCombox" Margin="10"/>
                 <ComboBox x:Name="HeadEndWidth" Margin="10"/>
                 <ComboBox x:Name="HeadEndLength" Margin="10"/>
             </StackPanel>
-            <StackPanel Grid.Column="1">
+            <StackPanel Grid.Column="2">
                 <ComboBox x:Name="TailEndCombox" Margin="10"/>
                 <ComboBox x:Name="TailEndWidth" Margin="10"/>
                 <ComboBox x:Name="TailEndLength" Margin="10"/>
             </StackPanel>
-            <Button Grid.Column="2" Height="50" Width="200" Content="解析" FontSize="25" Click="Button_Click"/>
+            <Button Grid.Column="3" Height="50" Width="200" Content="解析" FontSize="25" Click="Button_Click"/>
         </Grid>
         <Grid Grid.Row="1" x:Name="PathGrid" >
 
