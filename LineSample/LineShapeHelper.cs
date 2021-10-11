@@ -22,8 +22,8 @@ namespace LineSample
     {
         public static Geometry GetGeometryByArrowType(string arrowType,double strokeThickness, LineEndWidth lineEndWidth, LineEndLength lineEndLength, Point firstPoint, Point lastPoint)
         {
-            var arrowWidth = GetArrowWidth(arrowType, lineEndWidth, strokeThickness);
-            var arrowHeight = GetArrowLength(arrowType, lineEndLength, strokeThickness);
+            var arrowWidth = GetArrowWidthByLineEndLength(arrowType, lineEndLength, strokeThickness);
+            var arrowHeight = GetArrowLengthByLineEndWidth(arrowType, lineEndWidth, strokeThickness);
             Geometry geometry = arrowType switch
             {
                 "Triangle" => GetTriangleGeometry(firstPoint, lastPoint, arrowWidth, arrowHeight),
@@ -36,76 +36,22 @@ namespace LineSample
             return geometry;
         }
 
-        private static double GetArrowWidth(string arrowType, LineEndWidth lineEndWidth,double strokeThickness)
+        private static double GetArrowWidthByLineEndLength(string arrowType, LineEndLength lineEndLength, double strokeThickness)
         {
             double arrowWidth = 0;
             switch (arrowType)
             {
                 case "Triangle":
-                    arrowWidth = lineEndWidth switch
+                    arrowWidth = lineEndLength switch
                     {
-                        LineEndWidth.Small => 0.6 * (strokeThickness > 2 ? strokeThickness : 2),
-                        LineEndWidth.Medium => 1.5 * (strokeThickness > 2 ? strokeThickness : 2),
-                        LineEndWidth.Large => 3 * (strokeThickness > 2 ? strokeThickness : 2),
+                        LineEndLength.Small => 0.7 * (strokeThickness > 2 ? strokeThickness : 2),
+                        LineEndLength.Medium => 1.5 * (strokeThickness > 2 ? strokeThickness : 2),
+                        LineEndLength.Large => 3 * (strokeThickness > 2 ? strokeThickness : 2),
                         _ => 1.5 * (strokeThickness > 2 ? strokeThickness : 2)
                     };
                     break;
                 case "Oval":
-                    arrowWidth = lineEndWidth switch
-                    {
-                        LineEndWidth.Small => 1 * (strokeThickness > 2 ? strokeThickness : 2),
-                        LineEndWidth.Medium => 2 * (strokeThickness > 2 ? strokeThickness : 2),
-                        LineEndWidth.Large => 4 * (strokeThickness > 2 ? strokeThickness : 2),
-                        _ => 2 * (strokeThickness > 2 ? strokeThickness : 2)
-                    };
-                    break;
-                case "Arrow":
-                    arrowWidth = lineEndWidth switch
-                    {
-                        LineEndWidth.Small => 3 * (strokeThickness > 2 ? strokeThickness : 2),
-                        LineEndWidth.Medium => 4 * (strokeThickness > 2 ? strokeThickness : 2),
-                        LineEndWidth.Large => 6 * (strokeThickness > 2 ? strokeThickness : 2),
-                        _ => 6 * (strokeThickness > 2 ? strokeThickness : 2)
-                    };
-                    break;
-                case "Stealth":
-                    arrowWidth = lineEndWidth switch
-                    {
-                        LineEndWidth.Small => 0.4 * (strokeThickness > 2 ? strokeThickness : 2),
-                        LineEndWidth.Medium => 0.5 * (strokeThickness > 2 ? strokeThickness : 2),
-                        LineEndWidth.Large => 1.5 * (strokeThickness > 2 ? strokeThickness : 2),
-                        _ => 1.5 * (strokeThickness > 2 ? strokeThickness : 2)
-                    };
-                    break;
-                case "Diamond":
-                    arrowWidth = lineEndWidth switch
-                    {
-                        LineEndWidth.Small => 0.2 * (strokeThickness > 2 ? strokeThickness : 2),
-                        LineEndWidth.Medium => 0.75 * (strokeThickness > 2 ? strokeThickness : 2),
-                        LineEndWidth.Large => 1.5 * (strokeThickness > 2 ? strokeThickness : 2),
-                        _ => 0.75 * (strokeThickness > 2 ? strokeThickness : 2)
-                    };
-                    break;
-            }
-            return arrowWidth;
-        }
-
-        private static double GetArrowLength(string arrowType, LineEndLength lineEndLength,double strokeThickness)
-        {
-            double arrowLength = 0;
-            switch (arrowType)
-            {
-                case "Triangle":
-                    arrowLength = lineEndLength switch
-                    {
-                        LineEndLength.Small => 0.35* (strokeThickness > 2 ? strokeThickness : 2),
-                        LineEndLength.Medium => 0.75 * (strokeThickness > 2 ? strokeThickness : 2),
-                        LineEndLength.Large => 1.5 * (strokeThickness > 2 ? strokeThickness : 2),
-                        _ => 0.75 * (strokeThickness > 2 ? strokeThickness : 2)
-                    };
-                    break;
-                case "Oval":
-                    arrowLength = lineEndLength switch
+                    arrowWidth = lineEndLength switch
                     {
                         LineEndLength.Small => 1 * (strokeThickness > 2 ? strokeThickness : 2),
                         LineEndLength.Medium => 2 * (strokeThickness > 2 ? strokeThickness : 2),
@@ -114,29 +60,84 @@ namespace LineSample
                     };
                     break;
                 case "Arrow":
-                    arrowLength = lineEndLength switch
+                    arrowWidth = lineEndLength switch
                     {
-                        LineEndLength.Small => 1.5 * (strokeThickness > 2 ? strokeThickness : 2),
-                        LineEndLength.Medium => 2 * (strokeThickness > 2 ? strokeThickness : 2),
-                        LineEndLength.Large => 3 * (strokeThickness > 2 ? strokeThickness : 2),
+                        LineEndLength.Small => 3 * (strokeThickness > 2 ? strokeThickness : 2),
+                        LineEndLength.Medium => 4 * (strokeThickness > 2 ? strokeThickness : 2),
+                        LineEndLength.Large => 6 * (strokeThickness > 2 ? strokeThickness : 2),
                         _ => 6 * (strokeThickness > 2 ? strokeThickness : 2)
                     };
                     break;
                 case "Stealth":
-                    arrowLength = lineEndLength switch
+                    arrowWidth = lineEndLength switch
                     {
-                        LineEndLength.Small => 0.2 * (strokeThickness > 2 ? strokeThickness : 2),
-                        LineEndLength.Medium => 0.3 * (strokeThickness > 2 ? strokeThickness : 2),
-                        LineEndLength.Large => 0.75 * (strokeThickness > 2 ? strokeThickness : 2),
+                        LineEndLength.Small => 0.4 * (strokeThickness > 2 ? strokeThickness : 2),
+                        LineEndLength.Medium => 0.5 * (strokeThickness > 2 ? strokeThickness : 2),
+                        LineEndLength.Large => 1.5 * (strokeThickness > 2 ? strokeThickness : 2),
+                        _ => 1.5 * (strokeThickness > 2 ? strokeThickness : 2)
+                    };
+                    break;
+                case "Diamond":
+                    arrowWidth = lineEndLength switch
+                    {
+                        LineEndLength.Small => 0.4 * (strokeThickness > 2 ? strokeThickness : 2),
+                        LineEndLength.Medium => 0.9 * (strokeThickness > 2 ? strokeThickness : 2),
+                        LineEndLength.Large => 1.2 * (strokeThickness > 2 ? strokeThickness : 2),
+                        _ => 0.75 * (strokeThickness > 2 ? strokeThickness : 2)
+                    };
+                    break;
+            }
+
+            return arrowWidth;
+        }
+
+        private static double GetArrowLengthByLineEndWidth(string arrowType, LineEndWidth lineEndWidth, double strokeThickness)
+        {
+            double arrowLength = 0;
+            switch (arrowType)
+            {
+                case "Triangle":
+                    arrowLength = lineEndWidth switch
+                    {
+                        LineEndWidth.Small => 0.35 * (strokeThickness > 2 ? strokeThickness : 2),
+                        LineEndWidth.Medium => 0.75 * (strokeThickness > 2 ? strokeThickness : 2),
+                        LineEndWidth.Large => 1.5 * (strokeThickness > 2 ? strokeThickness : 2),
+                        _ => 0.75 * (strokeThickness > 2 ? strokeThickness : 2)
+                    };
+                    break;
+                case "Oval":
+                    arrowLength = lineEndWidth switch
+                    {
+                        LineEndWidth.Small => 1 * (strokeThickness > 2 ? strokeThickness : 2),
+                        LineEndWidth.Medium => 2 * (strokeThickness > 2 ? strokeThickness : 2),
+                        LineEndWidth.Large => 4 * (strokeThickness > 2 ? strokeThickness : 2),
+                        _ => 2 * (strokeThickness > 2 ? strokeThickness : 2)
+                    };
+                    break;
+                case "Arrow":
+                    arrowLength = lineEndWidth switch
+                    {
+                        LineEndWidth.Small => 1.5 * (strokeThickness > 2 ? strokeThickness : 2),
+                        LineEndWidth.Medium => 2 * (strokeThickness > 2 ? strokeThickness : 2),
+                        LineEndWidth.Large => 3 * (strokeThickness > 2 ? strokeThickness : 2),
+                        _ => 6 * (strokeThickness > 2 ? strokeThickness : 2)
+                    };
+                    break;
+                case "Stealth":
+                    arrowLength = lineEndWidth switch
+                    {
+                        LineEndWidth.Small => 0.2 * (strokeThickness > 2 ? strokeThickness : 2),
+                        LineEndWidth.Medium => 0.3 * (strokeThickness > 2 ? strokeThickness : 2),
+                        LineEndWidth.Large => 0.75 * (strokeThickness > 2 ? strokeThickness : 2),
                         _ => 0.75 * (strokeThickness > 2 ? strokeThickness : 2)
                     };
                     break;
                 case "Diamond":
-                    arrowLength = lineEndLength switch
+                    arrowLength = lineEndWidth switch
                     {
-                        LineEndLength.Small => 0.2 * (strokeThickness > 2 ? strokeThickness : 2),
-                        LineEndLength.Medium => 0.75 * (strokeThickness > 2 ? strokeThickness : 2),
-                        LineEndLength.Large => 1.5 * (strokeThickness > 2 ? strokeThickness : 2),
+                        LineEndWidth.Small => 0.3 * (strokeThickness > 2 ? strokeThickness : 2),
+                        LineEndWidth.Medium => 0.75 * (strokeThickness > 2 ? strokeThickness : 2),
+                        LineEndWidth.Large => 1.5 * (strokeThickness > 2 ? strokeThickness : 2),
                         _ => 0.75 * (strokeThickness > 2 ? strokeThickness : 2)
                     };
                     break;
